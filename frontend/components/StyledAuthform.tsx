@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import React, { useState } from "react";
 import {
@@ -8,6 +8,7 @@ import {
   AlertCircleIcon,
   AppleIcon,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 interface AuthFormProps {
   type: "login" | "signup";
@@ -18,6 +19,7 @@ export const StyledAuthform: React.FC<AuthFormProps> = ({ type }) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -32,6 +34,8 @@ export const StyledAuthform: React.FC<AuthFormProps> = ({ type }) => {
       alert(
         `${type === "signup" ? "Account created" : "Logged in"} successfully!`
       );
+
+      router.push("/loading");
     } catch (error: unknown) {
       if (error instanceof Error) {
         setError(error.message);
