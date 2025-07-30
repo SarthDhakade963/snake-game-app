@@ -1,5 +1,14 @@
+"use client";
+
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+
 export default function Home() {
-  return (
-    <div className="text-4xl font-black underline">Next app is Working</div>
-  );
+  const router = useRouter();
+
+  useEffect(() => {
+    router.push("/home"); // redirects silently without pushing browser history
+  }, [router]);
+
+  return null;
 }

@@ -8,18 +8,22 @@ import {
   AlertCircleIcon,
   AppleIcon,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
 
-interface AuthFormProps {
+interface AuthformProps {
   type: "login" | "signup";
+  onSuccess: () => void;
+  onToggleType: () => void;
 }
 
-export const StyledAuthform: React.FC<AuthFormProps> = ({ type }) => {
+export const StyledAuthform: React.FC<AuthformProps> = ({
+  type,
+  onSuccess,
+  onToggleType,
+}) => {
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -35,7 +39,7 @@ export const StyledAuthform: React.FC<AuthFormProps> = ({ type }) => {
         `${type === "signup" ? "Account created" : "Logged in"} successfully!`
       );
 
-      router.push("/loading");
+      onSuccess(); // call parent to show loading and redirect later
     } catch (error: unknown) {
       if (error instanceof Error) {
         setError(error.message);
@@ -157,6 +161,20 @@ export const StyledAuthform: React.FC<AuthFormProps> = ({ type }) => {
                 {type === "signup" ? "Start Playing!" : "Let's Go!"}
               </button>
             </form>
+
+            <div className="mt-6 text-center">
+              <p className="text-green-700 text-lg">
+                {type === "signup"
+                  ? "Already a snake player?"
+                  : "New to Snake Game?"}{" "}
+                <button
+                  onClick={onToggleType}
+                  className="text-green-600 hover:text-green-800 font-bold hover:underline transition-colors"
+                >
+                  {type === "signup" ? "Login" : "Sign up"}
+                </button>
+              </p>
+            </div>
           </div>
 
           <div className="h-6 bg-green-500 flex">

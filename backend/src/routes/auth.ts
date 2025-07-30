@@ -3,6 +3,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import prisma from "../prisma";
 import { authMiddleWare } from "../middleware/auth";
+import cookieParser from "cookie-parser";
 
 const router = express.Router(); // create the constructor of roter
 
@@ -18,14 +19,12 @@ router.post("/signup", async (req, res) => {
     const userNameExists = await prisma.user.findUnique({
       where: { username },
     });
-
     // if username exists then send Bad Request status (400)
     if (userNameExists)
-      res.status(400).json({ error: "Username already exists" });
+      return res.status(400).json({ error: "Username already exists" });
 
     // if user with email exists then send Bad Request status (400)
     const userExists = await prisma.user.findUnique({ where: { email } });
-
     // if user with email exists then send Bad Request status (400)
     if (userExists)
       return res.status(400).json({ error: "User already exists" });
@@ -42,7 +41,14 @@ router.post("/signup", async (req, res) => {
     // JWT_SECRET: This is the secret key used to digitally sign the token
     const token = jwt.sign({ userId: user.id }, JWT_SECRET);
 
-    res.json({ token });
+    res
+      .cookie("auth-token", token, {
+        httpOnly: true,
+        sameSite: "lax",
+        secure: process.env.NODE_ENV === "production",
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      })
+      .json({ message: "Authenticated" });
   } catch (error) {
     console.error(error);
 
@@ -61,7 +67,15 @@ router.post("/login", async (req, res) => {
     if (!valid) return res.status(401).json({ error: "Invalid Password" });
 
     const token = jwt.sign({ userId: user.id }, JWT_SECRET);
-    res.json({ token });
+
+    res
+      .cookie("auth-token", token, {
+        httpOnly: true,
+        sameSite: "lax",
+        secure: process.env.NODE_ENV === "production",
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      })
+      .json({ message: "Authenticated" });
   } catch (error) {
     console.error(error);
 
@@ -88,5 +102,20 @@ router.get("/me", authMiddleWare, async (req, res) => {
 // router.get("/me", (_, res) => {
 //   return res.json({ status: "Middleware bypass test works" });
 // });
+
+router.get("/status", async (req, res) => {
+  const token = req.cookies?.auth_token;
+
+  if (!token) {
+    return res.json({ authenticated: false });
+  }
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    return res.json({ authenticated: true, userId: (decoded as any).userId });
+  } catch (error) {
+    return res.json({ authenticated: false });
+  }
+});
 
 export default router;

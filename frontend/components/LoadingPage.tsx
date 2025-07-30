@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { Card, CardTitle } from "./ui/card";
+import { Card } from "./ui/card";
 
 interface LoadingPageProps {
   title: string;
