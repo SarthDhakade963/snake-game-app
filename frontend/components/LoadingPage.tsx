@@ -15,7 +15,7 @@ const LoadPage: React.FC<LoadingPageProps> = ({ title, loadingBarTitle }) => {
   useEffect(() => {
     const timer = setTimeout(() => {
       router.push("/game");
-    }, 10000000); // Delay before navigating
+    }, 1000); // Delay before navigating
 
     return () => clearTimeout(timer);
   });

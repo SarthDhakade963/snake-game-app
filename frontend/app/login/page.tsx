@@ -1,7 +1,7 @@
 "use client";
 import LoadPage from "@/components/LoadingPage";
 import dynamic from "next/dynamic";
-
+// to resolve tree hydration issue
 const StyledAuthform = dynamic(
   () => import("@/components/StyledAuthform").then((mod) => mod.StyledAuthform),
   { ssr: false }
@@ -22,12 +22,15 @@ export default function LoginPage() {
   return (
     <div>
       {loading ? (
-        <LoadPage title="Snake Game" loadingBarTitle="Preparing your Battle" />
+        <LoadPage
+          title="Welcome Back"
+          loadingBarTitle="Loading your snake world"
+        />
       ) : (
         <StyledAuthform
           type="login"
           onSuccess={handleSuccess}
-          onToggleType={() => router.push("/login")}
+          onToggleType={() => router.push("/signup")}
         />
       )}
     </div>

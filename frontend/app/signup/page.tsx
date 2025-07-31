@@ -17,7 +17,7 @@ export default function SignupPage() {
     setLoading(true);
     setTimeout(() => {
       router.push("/game");
-    }, 3000);
+    }, 3000); // 3 sec delay
   };
 
   return (
@@ -25,7 +25,7 @@ export default function SignupPage() {
       {loading ? (
         <LoadingPage
           title="Snake Game"
-          loadingBarTitle="Preparing your battlefield..."
+          loadingBarTitle="Preparing your battlefield"
         />
       ) : (
         <StyledAuthform

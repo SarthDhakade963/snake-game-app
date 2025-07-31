@@ -1,15 +1,29 @@
 "use client";
 
 import { signUpOrLogin } from "@/lib/auth";
-import { useRouter } from "next/navigation";
-import React, { useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import React, { useEffect, useState } from "react";
+import { Button } from "./ui/button";
 
-const Authform = ({ type }: { type: "login" | "signup" }) => {
+
+
+const Authform = () => {
+  const router = useRouter();
+  const pathname = usePathname();
+  const [type, setType] = useState<"login" | "signup">("login");
+
+  useEffect(() => {
+    if (pathname.includes("signup")) {
+      setType("signup");
+    } else {
+      setType("login");
+    }
+  }, [pathname]);
+
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -23,6 +37,14 @@ const Authform = ({ type }: { type: "login" | "signup" }) => {
       } else {
         setError("Something went wrong");
       }
+    }
+  };
+
+  const handleRouteChange = () => {
+    if (type === "signup") {
+      router.push("/login");
+    } else {
+      router.push("/signup");
     }
   };
   return (
@@ -87,12 +109,12 @@ const Authform = ({ type }: { type: "login" | "signup" }) => {
           {type === "signup"
             ? "Already have an account?"
             : "Don't have an account?"}{" "}
-          <a
-            href={type === "signup" ? "/login" : "/signup"}
-            className="text-blue-600 font-medium hover:underline"
+          <Button
+            onClick={handleRouteChange}
+            className="text-green-600 font-medium hover:underline cursor-pointer"
           >
             {type === "signup" ? "Login" : "Sign up"}
-          </a>
+          </Button>
         </p>
       </div>
     </div>

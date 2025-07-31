@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 
+const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
+
 const HomePage = () => {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -11,15 +13,14 @@ const HomePage = () => {
   const handlePlay = async () => {
     setLoading(true);
 
-
     try {
-      const res = await fetch("http://localhost:5000/auth/status", {
+      const res = await fetch(`${baseURL}/auth/status`, {
         method: "GET",
         credentials: "include", // include cookies if any
       });
 
       const data = await res.json();
-      
+
       if (data.authenticated) {
         router.push("/loading"); // which then routes to /game
       } else {

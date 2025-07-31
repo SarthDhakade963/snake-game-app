@@ -7,6 +7,8 @@ import {
   LockIcon,
   AlertCircleIcon,
   AppleIcon,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 
 interface AuthformProps {
@@ -24,6 +26,7 @@ export const StyledAuthform: React.FC<AuthformProps> = ({
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -35,14 +38,47 @@ export const StyledAuthform: React.FC<AuthformProps> = ({
         password,
         username,
       });
-      alert(
-        `${type === "signup" ? "Account created" : "Logged in"} successfully!`
+
+      const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
+
+      console.log("ENV URL:", process.env.NEXT_PUBLIC_API_BASE_URL);
+      console.log(
+        "Final endpoint:",
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/${type}`
       );
 
-      onSuccess(); // call parent to show loading and redirect later
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        setError(error.message);
+      if (!baseURL) {
+        throw new Error("API base URL is not defined in environment variables");
+      }
+
+      const endpoint = `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/${type}`;
+
+      console.log("Endpoint:", endpoint);
+
+      // data that user enter when signup (username, email and password) and when login (email, password)
+      const payload =
+        type === "signup" ? { email, username, password } : { email, password };
+
+      // fetch the data
+      const res = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(payload),
+      });
+
+      // convert to json
+      const data = await res.json();
+
+      // if status is not okay then authentication failed
+      if (!res.ok) {
+        throw new Error(data.error || "Authentication failed");
+      }
+
+      if (onSuccess) onSuccess(); // for redirecting the page to either loading or signup
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
       } else {
         setError("Something went wrong");
       }
@@ -55,6 +91,7 @@ export const StyledAuthform: React.FC<AuthformProps> = ({
         <div className="absolute -top-10 -left-10 w-40 h-40 bg-green-500 rounded-full opacity-20 blur-3xl" />
         <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-yellow-400 rounded-full opacity-20 blur-3xl" />
 
+        {/* small rectangular shapes at top */}
         <div className="relative bg-white border-4 border-green-500 rounded-3xl shadow-2xl overflow-hidden z-10">
           <div className="h-6 bg-green-500 flex">
             {[...Array(20)].map((_, i) => (
@@ -64,14 +101,19 @@ export const StyledAuthform: React.FC<AuthformProps> = ({
               />
             ))}
           </div>
-
+          {/* Smileyy at the top */}
           <div className="bg-green-400 p-6 text-center">
             <div className="relative bg-yellow-300 rounded-full w-20 h-20 mx-auto flex items-center justify-center mb-3 border-4 border-green-500">
               <div className="absolute w-16 h-16 rounded-full bg-yellow-300 flex items-center justify-center">
-                <div className="absolute top-3 left-3 w-3 h-6 bg-green-800 rounded-full" />
+                <div className="absolute top-3 left-3 w-3 h-6 bg-green-800 rounded-full">
+                  <div className="absolute top-[3.5px] left-[3.5px] w-1.5 h-1.5 bg-white rounded-full" />
+                </div>
                 <div className="absolute bottom-2 w-1 h-4 bg-red-500 rounded-full" />
                 <div className="absolute bottom-0 left-[9px] w-1 h-2 bg-red-500 rounded-full rotate-45" />
                 <div className="absolute bottom-0 right-[9px] w-1 h-2 bg-red-500 rounded-full -rotate-45" />
+                <div className="absolute top-3 right-3 w-3 h-6 bg-green-800 rounded-full">
+                  <div className="absolute top-[3.5px] left-[3.5px] w-1.5 h-1.5 bg-white rounded-full" />
+                </div>
               </div>
             </div>
             <h2 className="text-2xl font-bold text-green-800 tracking-wide">
@@ -130,13 +172,27 @@ export const StyledAuthform: React.FC<AuthformProps> = ({
                     <LockIcon className="h-5 w-5 text-green-600" />
                   </div>
                   <input
-                    type="password"
+                    type={showPassword ? "text" : "password"}
+                    autoComplete={
+                      type === "signup" ? "new-password" : "current-password"
+                    }
                     placeholder="Secret password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="w-full bg-white text-green-800 pl-12 pr-4 py-4 rounded-2xl border-2 border-green-400 focus:border-green-600 focus:ring-2 focus:ring-green-300 focus:outline-none transition-colors text-lg"
                     required
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 bg-transparent focus:outline-none"
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-5 w-5 text-green-600" />
+                    ) : (
+                      <Eye className="h-5 w-5 text-green-600" />
+                    )}
+                  </button>
                 </div>
               </div>
 

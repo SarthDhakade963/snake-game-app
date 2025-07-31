@@ -3,7 +3,6 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import prisma from "../prisma";
 import { authMiddleWare } from "../middleware/auth";
-import cookieParser from "cookie-parser";
 
 const router = express.Router(); // create the constructor of roter
 
@@ -42,10 +41,11 @@ router.post("/signup", async (req, res) => {
     const token = jwt.sign({ userId: user.id }, JWT_SECRET);
 
     res
-      .cookie("auth-token", token, {
+      .cookie("auth_token", token, {
         httpOnly: true,
         sameSite: "lax",
-        secure: process.env.NODE_ENV === "production",
+        secure: false, // for testing //process.env.NODE_ENV === "production"
+        path: "/",
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       })
       .json({ message: "Authenticated" });
@@ -59,6 +59,8 @@ router.post("/signup", async (req, res) => {
 router.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
+  console.log("LOGIN REQUEST:", { email, password });
+
   try {
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user) return res.status(404).json({ error: "User not found" });
@@ -69,10 +71,11 @@ router.post("/login", async (req, res) => {
     const token = jwt.sign({ userId: user.id }, JWT_SECRET);
 
     res
-      .cookie("auth-token", token, {
+      .cookie("auth_token", token, {
         httpOnly: true,
         sameSite: "lax",
-        secure: process.env.NODE_ENV === "production",
+        secure: false,
+        path: "/",
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       })
       .json({ message: "Authenticated" });
@@ -104,7 +107,7 @@ router.get("/me", authMiddleWare, async (req, res) => {
 // });
 
 router.get("/status", async (req, res) => {
-  const token = req.cookies?.auth_token;
+  const token = req.cookies.auth_token;
 
   if (!token) {
     return res.json({ authenticated: false });

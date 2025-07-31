@@ -1,5 +1,3 @@
-export const API_URL = "http://localhost:5000";
-
 type AuthResponse = { token: string };
 type MeResponse = { user: { email: string; id: string; createdAt: string } };
 
@@ -15,6 +13,8 @@ export async function signUpOrLogin(
     return signUp(email, password, username);
   }
 }
+
+const API_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export async function signUp(
   email: string,
