@@ -1,6 +1,6 @@
 "use client";
 
-import { signUpOrLogin } from "@/lib/auth";
+import { signUpOrLogin } from "@/lib/api/auth";
 import { usePathname, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { Button } from "./ui/button";

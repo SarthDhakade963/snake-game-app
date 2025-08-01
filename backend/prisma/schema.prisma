@@ -21,4 +21,5 @@ model Score {
   User      User     @relation(fields: [userId], references: [id])
   userId    String
   score     Int
+  createdAt DateTime @default(now())
 }

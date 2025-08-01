@@ -339,7 +339,7 @@ const SnakeGame: React.FC = () => {
           "D",
         ].includes(e.key)
       ) {
-        e.preventDefault(); // ✅ Prevent scrolling
+        e.preventDefault(); // Prevent scrolling
       }
       // Prevent opposite direction (can't go directly backwards)
       switch (e.key) {

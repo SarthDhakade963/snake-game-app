@@ -2,12 +2,15 @@ import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import authRoutes from "./routes/auth";
+import scoreRoutes from "./routes/score";
 import cookieParser from "cookie-parser";
 
 dotenv.config(); // Loads env vars from .env file
+
 const app = express(); // Initializes Express Server
 
 app.use(cookieParser());
+
 const FRONTEND_ORIGIN = process.env.FRONTEND_URL || "http://localhost:3000";
 app.use(
   cors({
@@ -22,6 +25,9 @@ app.use(express.json()); // parses incoming JSON payloads
 
 // App routes
 app.use("/auth", authRoutes); // mounts /signup and /login under /auth
+
+// Score routes
+app.use("/score", scoreRoutes); 
 
 // Health Checks
 app.get("/", (_, res) => res.send("Backup is Up ✅"));
