@@ -6,7 +6,6 @@ import React, { useEffect, useState } from "react";
 import { Button } from "./ui/button";
 
 
-
 const Authform = () => {
   const router = useRouter();
   const pathname = usePathname();

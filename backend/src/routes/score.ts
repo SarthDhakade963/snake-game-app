@@ -14,8 +14,6 @@ import { authMiddleWare } from "../middleware/auth";
 const router = Router();
 
 router.post("/", authMiddleWare, async (req, res) => {
-  console.log("➡️  /score POST called");
-
   const userId = req.user?.userId;
   
   if (!userId) {
@@ -44,7 +42,6 @@ router.post("/", authMiddleWare, async (req, res) => {
 
 // GET /score/highscore/:userId
 router.get("/highscore", authMiddleWare, async (req, res) => {
-  console.log("➡️  /score/highscore GET called");
   const usrId = req.user?.userId;
 
   try {
@@ -60,7 +57,6 @@ router.get("/highscore", authMiddleWare, async (req, res) => {
 // get all scores of user
 // GET /score/:userId
 router.get("/", authMiddleWare, async (req, res) => {
-  console.log("➡️  /score/ GET called");
   const userId = req.user?.userId;
 
   try {
@@ -75,7 +71,6 @@ router.get("/", authMiddleWare, async (req, res) => {
 
 // delete scores of user
 router.delete("/", authMiddleWare, async (req, res) => {
-  console.log("➡️  /score/ DELETE called");
   const userId = req.user?.userId;
 
   try {
@@ -87,5 +82,7 @@ router.delete("/", authMiddleWare, async (req, res) => {
     return res.status(500).json("Error deleting scores");
   }
 });
+
+
 
 export default router;

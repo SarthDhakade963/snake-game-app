@@ -13,7 +13,7 @@ export const saveScore = async (userId: string, score: number) => {
 
     return newScore;
   } catch (error) {
-    console.error("Error saving score", error);
+    console.error("Server Error: Error saving score", error);
     throw error;
   }
 };
@@ -28,7 +28,7 @@ export const getHighScore = async (userId: string) => {
 
     return highScore?.score ?? 0;
   } catch (error) {
-    console.error("Error getting highscore", error);
+    console.error("Server Error: Error getting highscore", error);
     throw error;
   }
 };
@@ -43,7 +43,7 @@ export const getAllScores = async (userId: string) => {
 
     return scores;
   } catch (error) {
-    console.error("Error getting all scores", error);
+    console.error("Server Error: Error getting all scores", error);
     throw error;
   }
 };
@@ -57,7 +57,7 @@ export const clearScores = async (userId: string) => {
 
     return deleted;
   } catch (error) {
-    console.error("Error clearing scores", error);
+    console.error("Server Error: Error clearing scores", error);
     throw error;
   }
 };

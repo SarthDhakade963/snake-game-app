@@ -1,11 +1,11 @@
 import express from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import prisma from "../prisma";
 import { authMiddleWare } from "../middleware/auth";
 import {
   createUser,
   findUniqueUserId,
+  getUserName,
   userEmailExists,
   usernameExists,
 } from "../lib/auth";
@@ -25,13 +25,13 @@ router.post("/signup", async (req, res) => {
     const userNameExists = await usernameExists(username);
     // if username exists then send Bad Request status (400)
     if (userNameExists)
-      return res.status(400).json({ error: "Username already exists" });
+      return res.status(400).json({ error: "Router error: Username already exists" });
 
     // if user with email exists then send Bad Request status (400)
     const userExists = await userEmailExists(email);
     // if user with email exists then send Bad Request status (400)
     if (userExists)
-      return res.status(400).json({ error: "User already exists" });
+      return res.status(400).json({ error: "Router error: User already exists" });
 
     // bcrypt the password
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -56,21 +56,19 @@ router.post("/signup", async (req, res) => {
   } catch (error) {
     console.error(error);
 
-    res.status(500).json({ error: "Something went wrong" });
+    res.status(500).json({ error: "Router error: Something went wrong during Signup" });
   }
 });
 
 router.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
-  console.log("LOGIN REQUEST:", { email, password });
-
   try {
     const user = await userEmailExists(email);
-    if (!user) return res.status(404).json({ error: "User not found" });
+    if (!user) return res.status(404).json({ error: "Router error: User not found" });
 
     const valid = await bcrypt.compare(password, user.password);
-    if (!valid) return res.status(401).json({ error: "Invalid Password" });
+    if (!valid) return res.status(401).json({ error: "Router error: Invalid Password" });
 
     const token = jwt.sign({ userId: user.id }, JWT_SECRET);
 
@@ -88,7 +86,7 @@ router.post("/login", async (req, res) => {
   } catch (error) {
     console.error(error);
 
-    return res.status(500).json({ error: "Something went wrong" });
+    return res.status(500).json({ error: "Router error: Something went wrong during login" });
   }
 });
 
@@ -97,11 +95,11 @@ router.get("/me", authMiddleWare, async (req, res) => {
     const userId = (req as any).user.userId;
     const user = await findUniqueUserId(userId);
 
-    if (!user) return res.status(401).json({ error: "User not found" });
+    if (!user) return res.status(401).json({ error: "Router error: User not found" });
 
     res.json({ user });
   } catch (error) {
-    res.status(500).json({ error: "Failed to fetch user" });
+    res.status(500).json({ error: "Router error: Failed to fetch user" });
   }
 });
 
@@ -111,6 +109,7 @@ router.get("/me", authMiddleWare, async (req, res) => {
 
 router.get("/status", async (req, res) => {
   const token = req.cookies.auth_token;
+  console.log("Token from status : ", token);
 
   if (!token) {
     return res.json({ authenticated: false });
@@ -121,6 +120,20 @@ router.get("/status", async (req, res) => {
     return res.json({ authenticated: true, userId: (decoded as any).userId });
   } catch (error) {
     return res.json({ authenticated: false });
+  }
+});
+
+router.get("/username", authMiddleWare, async (req, res) => {
+  const userId = req.user?.userId;
+  try {
+    const username = await getUserName(userId as string);
+
+    if (!username) return res.status(401).json({ error: "Router error: Username not found" });
+
+    return res.json({ username });
+  } catch (error) {
+    console.error("Router error: while getting username:", error);
+    res.status(500).json({ error: "Router error: Failed to fetch user" });
   }
 });
 

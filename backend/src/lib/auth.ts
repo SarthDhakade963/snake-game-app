@@ -30,7 +30,7 @@ export const usernameExists = async (username: string) => {
 
     return userName;
   } catch (error) {
-    console.error("Error finding username exists", error);
+    console.error("Server error while finding username exists", error);
     throw error;
   }
 };
@@ -57,5 +57,19 @@ export const findUniqueUserId = async (id: string) => {
   } catch (error) {
     console.error("Server while fetching unique user", error);
     throw error;
+  }
+};
+
+export const getUserName = async (id: string) => {
+  try {
+    const res = await prisma.user.findUnique({
+      where: { id },
+      select: { username: true },
+    });
+
+    return res?.username || null;
+  } catch (error) {
+    console.error("Server Error fetching username", error);
+    return null;
   }
 };

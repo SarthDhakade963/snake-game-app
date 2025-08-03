@@ -10,8 +10,6 @@ export const authMiddleWare = (
     // get the token
     const token = (req.cookies as any)?.auth_token;
 
-    console.log("🔐 Token from cookie:", token);
-
     if (!token) {
       return res
         .status(401)
@@ -20,7 +18,6 @@ export const authMiddleWare = (
 
     // verify the token if it is authorised
     const payload = jwt.verify(token, process.env.JWT_SECRET as string);
-    console.log("✅ Token verified, payload:", payload);
 
     (req as any).user = payload;
 

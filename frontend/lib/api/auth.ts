@@ -15,6 +15,7 @@ export async function signUpOrLogin(
 }
 
 const API_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+console.log("API_URL lib/api/auth.ts", API_URL);
 
 export async function signUp(
   email: string,
@@ -23,11 +24,11 @@ export async function signUp(
 ) {
   const res = await fetch(`${API_URL}/auth/signup`, {
     method: "POST",
-    headers: { "Content-type": "application/json" },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, password, username }),
   });
 
-  if (!res.ok) throw new Error("Invalid Credentials");
+  if (!res.ok) throw new Error("Invalid SIGNUP Credentials");
 
   try {
     const data: AuthResponse = await res.json();
@@ -54,12 +55,10 @@ export async function logIn(email: string, password: string) {
   }
 }
 
+// promise is the type of return value that will returned by the function call...
 export async function getMe(): Promise<{ email: string } | null> {
-  const token = localStorage.getItem("token");
-  if (!token) return null;
-
   const res = await fetch(`${API_URL}/auth/me`, {
-    headers: { Authorization: `Bearer ${token}` },
+    credentials: "include",
   });
 
   if (!res.ok) return null;
@@ -68,6 +67,37 @@ export async function getMe(): Promise<{ email: string } | null> {
   return data.user;
 }
 
+export async function getStatus(): Promise<{ authenticated: boolean }> {
+  try {
+    const res = await fetch(`${API_URL}/auth/status`, {
+      credentials: "include",
+    });
+
+    if (!res.ok) {
+      throw new Error(`Auth check failed with status ${res.status}`);
+    }
+
+    return res.json();
+  } catch (error) {
+    console.error("Error while getting Auth status", error);
+    return { authenticated: false };
+  }
+}
+
+export async function getUserName() {
+  const res = await fetch(`${API_URL}/auth/username`, {
+    credentials: "include",
+  });
+
+  console.log(res);
+  if (!res.ok) throw new Error("Invalid fetching username request");
+
+  const data = await res.json();
+
+  if (!data) throw new Error("Invalid fetching username json");
+  
+  return data.username;
+}
 export function logout() {
   localStorage.removeItem("token");
 }

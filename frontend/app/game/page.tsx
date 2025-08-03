@@ -1,27 +1,30 @@
 "use client";
+
 import SnakeGame from "@/components/SnakeGame";
+import { getStatus } from "@/lib/api/auth";
 import { useRouter } from "next/navigation";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 
 const SnakeGamePage = () => {
   const router = useRouter();
-  // protects the game page from unauthorized access
-  
-  const BASE_URL = process.env.NEXT_PUBLIC_BASE_API_URL;
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
 
   useEffect(() => {
     const checkAuth = async () => {
-      const res = await fetch(`${BASE_URL}/auth/status`, {
-        credentials: "include",
-      });
-      const data = await res.json();
+      const data = await getStatus();
+
       if (!data.authenticated) {
         router.push("/login");
+      } else {
+        setIsAuthenticated(true);
       }
     };
+
     checkAuth();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [router]);
+
+  if (isAuthenticated === null) return null; // Or a loading spinner
+
   return (
     <main className="min-h-screen flex items-center justify-center bg-green-50 p-4">
       <SnakeGame />

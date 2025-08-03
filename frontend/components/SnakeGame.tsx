@@ -2,6 +2,9 @@
 
 import React, { useCallback, useEffect, useState, useRef } from "react";
 import { TrophyIcon, PlayIcon, PauseIcon, RotateCcwIcon } from "lucide-react";
+import { getHighscore, submitScore } from "@/lib/api/score";
+import toast from "react-hot-toast";
+import { getUserName } from "@/lib/api/auth";
 // Game constants
 const GRID_SIZE = 20;
 const CELL_SIZE = 20;
@@ -15,10 +18,11 @@ const SnakeGame: React.FC = () => {
   // state's of the game
   const canvasRef = useRef<HTMLCanvasElement | null>(null); // The HTMLCanvasElement interface provides properties and methods for manipulating the layout and presentation of canvas elements.
   const [score, setScore] = useState(0);
-  const [highScore, setHighScore] = useState(0);
+  const [highScore, setHighScore] = useState<number | null>(null);
   const [gameOver, setGameOver] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [hasStarted, setHasStarted] = useState(false);
+  const [username, setUsername] = useState("");
 
   // Game state refs (to avoid closure issues in the game loop)
   const snakeRef = useRef([
@@ -41,9 +45,31 @@ const SnakeGame: React.FC = () => {
 
   const isPausedRef = useRef(isPaused);
 
+  // paused the game
   useEffect(() => {
     isPausedRef.current = isPaused;
   }, [isPaused]);
+
+  // fetch the highscore
+  useEffect(() => {
+    const fetchHighscore = async () => {
+      const highScore = await getHighscore();
+      if (score !== null) setHighScore(highScore);
+    };
+    fetchHighscore();
+  });
+
+  // set username
+  useEffect(() => {
+    const fetchUsername = async () => {
+      const username = await getUserName();
+      if (username) {
+        setUsername(username);
+      }
+    };
+
+    fetchUsername();
+  });
 
   // Initialize the game
   const initGame = useCallback(() => {
@@ -64,6 +90,7 @@ const SnakeGame: React.FC = () => {
     setGameOver(false); // game not over
 
     setIsPaused(false); // game is not paused
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -84,6 +111,28 @@ const SnakeGame: React.FC = () => {
       foodRef.current = food;
     }
   };
+
+  useEffect(() => {
+    const handleGameOver = async () => {
+      if (gameOver) {
+        try {
+          await submitScore(score);
+          if (score > (highScore ?? 0)) {
+            setHighScore(score);
+            toast.success("🎉 New HighScore!!!");
+          }
+        } catch (error) {
+          console.error(
+            "Failed to submit or update highscore /SnakeGameComponent",
+            error
+          );
+          toast.error("Something went wrong submitting your score");
+        }
+      }
+    };
+    handleGameOver();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gameOver]); // Run this when gameOver changes
 
   // Main game loop
   const gameLoop = useCallback(
@@ -149,9 +198,6 @@ const SnakeGame: React.FC = () => {
       head.y >= GRID_SIZE
     ) {
       setGameOver(true);
-      if (score > highScore) {
-        setHighScore(score);
-      }
       return;
     }
 
@@ -159,9 +205,6 @@ const SnakeGame: React.FC = () => {
     // .some helps to access the snake body
     if (snake.some((segment) => segment.x === head.x && segment.y === head.y)) {
       setGameOver(true);
-      if (score > highScore) {
-        setHighScore(score);
-      }
       return;
     }
 
@@ -435,15 +478,27 @@ const SnakeGame: React.FC = () => {
       </div>
       {/* Game header */}
       <div className="bg-green-400 p-4 flex justify-between items-center">
-        <div className="flex items-center space-x-2">
-          <TrophyIcon className="h-5 w-5 text-yellow-400" />
+        {/* High Score */}
+        <div className="flex items-center">
+          <TrophyIcon className="h-8 w-8  text-yellow-400 mr-2" />
           <span className="font-bold text-green-800">
-            High Score: {highScore}
+            High
+            <div>Score: {highScore}</div>
           </span>
         </div>
-        <div className="text-xl font-bold text-green-800">Snake Game</div>
-        <div className="flex items-center space-x-2">
-          <span className="font-bold text-green-800">Score: {score}</span>
+
+        {/* Game Title */}
+        <div className="text-xl font-bold text-green-800 flex-wrap">
+          Snake <div>Game</div>
+        </div>
+
+        {/* Score and Username */}
+        <span className="font-bold text-green-800">Score: {score}</span>
+        <div className="flex-col items-center justify-center space-x-4">
+          <div className="text-green-900 font-semibold bg-white rounded px-2 py-1 ml-2">
+            👤
+          </div>
+          <div className="flex flex-wrap ml-1">{username}</div>
         </div>
       </div>
 
@@ -524,7 +579,7 @@ const SnakeGame: React.FC = () => {
             </button>
           )}
         </div>
-        
+
         {/* Touch controls for mobile */}
         <div className="grid grid-cols-3 gap-2 max-w-xs mx-auto">
           <div className="col-start-2">
