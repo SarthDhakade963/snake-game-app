@@ -1,0 +1,37 @@
+name: Backend Staging CI
+
+on:
+  push:
+    branches:
+      - staging
+
+jobs:
+  staging:
+    name: Staging Environment
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Load environment variables
+        run: |
+          echo "DATABASE_URL=${{ secrets.STAGING_DATABASE_URL }}" >> $GITHUB_ENV
+          echo "JWT_SECRET=${{ secrets.STAGING_JWT_SECRET }}" >> $GITHUB_ENV
+          echo "FRONTEND_URL=${{ secrets.STAGING_FRONTEND_URL }}" >> $GITHUB_ENV
+
+      - name: Build Project
+        run: npm run build
+
+      - name: Deploy to Staging
+        run: |
+          echo "Deploying to staging..."
+          # Add your staging deployment steps here
