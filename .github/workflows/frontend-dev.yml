@@ -22,10 +22,10 @@ jobs:
       - name: Cache node modules
         uses: actions/cache@v3
         with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          path: frontend/node_modules
+          key: ${{ runner.os }}-frontend-${{ hashFiles('frontend/package-lock.json') }}
           restore-keys: |
-            ${{ runner.os }}-node-
+            ${{ runner.os }}-frontend-
 
       - name: Install dependencies
         run: npm install --legacy-peer-deps
