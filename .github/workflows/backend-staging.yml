@@ -2,8 +2,9 @@ name: Backend Staging CI
 
 on:
   push:
-    branches:
-      - staging
+    branches: ["staged"]
+  pull_request:
+    branches: ["staged"]
 
 jobs:
   staging:
@@ -22,7 +23,7 @@ jobs:
       - name: Install dependencies
         run: npm install
         working-directory: ./backend
-        
+
       - name: Load environment variables
         run: |
           echo "DATABASE_URL=${{ secrets.STAGING_DATABASE_URL }}" >> $GITHUB_ENV

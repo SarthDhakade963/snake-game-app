@@ -2,8 +2,9 @@ name: Backend Dev CI
 
 on:
   push:
-    branches:
-      - dev
+    branches: ["dev"]
+  pull_request:
+    branches: ["dev"]
 
 jobs:
   dev:
@@ -22,11 +23,6 @@ jobs:
       - name: Install dependencies
         run: npm install --legacy-peer-deps
         working-directory: ./backend
-
-      - name: Debug node binaries
-        run: ls -la /node_modules/.bin
-        working-directory: ./backend
-
       - name: Load environment variables
         run: |
           echo "DATABASE_URL=${{ secrets.DEV_DATABASE_URL }}" >> $GITHUB_ENV

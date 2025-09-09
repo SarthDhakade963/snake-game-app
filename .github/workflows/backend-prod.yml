@@ -2,8 +2,9 @@ name: Backend Production CI
 
 on:
   push:
-    branches:
-      - main
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
 
 jobs:
   production:
@@ -23,7 +24,6 @@ jobs:
         run: npm install
         working-directory: ./backend
 
-
       - name: Load environment variables
         run: |
           echo "DATABASE_URL=${{ secrets.PROD_DATABASE_URL }}" >> $GITHUB_ENV
@@ -33,7 +33,6 @@ jobs:
       - name: Build Project
         run: npm run build
         working-directory: ./backend
-
 
       - name: Deploy to Production
         run: |
