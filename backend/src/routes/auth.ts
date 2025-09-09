@@ -1,0 +1,140 @@
+import express from "express";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import { authMiddleWare } from "../middleware/auth";
+import {
+  createUser,
+  findUniqueUserId,
+  getUserName,
+  userEmailExists,
+  usernameExists,
+} from "../lib/auth";
+
+const router = express.Router(); // create the constructor of roter
+
+const JWT_SECRET: string = process.env.JWT_SECRET ?? "";
+// if (!JWT_SECRET) throw new Error("JWT_SECRET is not defined");
+
+// sign up router
+router.post("/signup", async (req, res) => {
+  // during signup client sends the username, email and password
+  const { username, email, password } = req.body;
+
+  try {
+    // checks if the user input username is unique
+    const userNameExists = await usernameExists(username);
+    // if username exists then send Bad Request status (400)
+    if (userNameExists)
+      return res.status(400).json({ error: "Router error: Username already exists" });
+
+    // if user with email exists then send Bad Request status (400)
+    const userExists = await userEmailExists(email);
+    // if user with email exists then send Bad Request status (400)
+    if (userExists)
+      return res.status(400).json({ error: "Router error: User already exists" });
+
+    // bcrypt the password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // store the user info in DB
+    const user = await createUser(username, email, hashedPassword);
+
+    // 🔸 jwt.sign(payload, secret) : Creates a JWT token
+    // payload : The data you want to include inside the token.
+    // JWT_SECRET: This is the secret key used to digitally sign the token
+    const token = jwt.sign({ userId: user.id }, JWT_SECRET);
+
+    res
+      .cookie("auth_token", token, {
+        httpOnly: true,
+        sameSite: "lax",
+        secure: false, // for testing //process.env.NODE_ENV === "production"
+        path: "/",
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      })
+      .json({ message: "Authenticated" });
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({ error: "Router error: Something went wrong during Signup" });
+  }
+});
+
+router.post("/login", async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    const user = await userEmailExists(email);
+    if (!user) return res.status(404).json({ error: "Router error: User not found" });
+
+    const valid = await bcrypt.compare(password, user.password);
+    if (!valid) return res.status(401).json({ error: "Router error: Invalid Password" });
+
+    const token = jwt.sign({ userId: user.id }, JWT_SECRET);
+
+    console.log(token);
+
+    res
+      .cookie("auth_token", token, {
+        httpOnly: true,
+        sameSite: "lax",
+        secure: false,
+        path: "/",
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      })
+      .json({ message: "Authenticated" });
+  } catch (error) {
+    console.error(error);
+
+    return res.status(500).json({ error: "Router error: Something went wrong during login" });
+  }
+});
+
+router.get("/me", authMiddleWare, async (req, res) => {
+  try {
+    const userId = (req as any).user.userId;
+    const user = await findUniqueUserId(userId);
+
+    if (!user) return res.status(401).json({ error: "Router error: User not found" });
+
+    res.json({ user });
+  } catch (error) {
+    res.status(500).json({ error: "Router error: Failed to fetch user" });
+  }
+});
+
+// router.get("/me", (_, res) => {
+//   return res.json({ status: "Middleware bypass test works" });
+// });
+
+router.get("/status", async (req, res) => {
+  const token = req.cookies.auth_token;
+  console.log("Token from status : ", token);
+
+  if (!token) {
+    return res.json({ authenticated: false });
+  }
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    return res.json({ authenticated: true, userId: (decoded as any).userId });
+  } catch (error) {
+    return res.json({ authenticated: false });
+  }
+});
+
+router.get("/username", authMiddleWare, async (req, res) => {
+  const userId = req.user?.userId;
+  try {
+    const username = await getUserName(userId as string);
+
+    if (!username) return res.status(401).json({ error: "Router error: Username not found" });
+
+    return res.json({ username });
+  } catch (error) {
+    console.error("Router error: while getting username:", error);
+    res.status(500).json({ error: "Router error: Failed to fetch user" });
+  }
+});
+
+export default router;
