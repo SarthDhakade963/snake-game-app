@@ -221,8 +221,8 @@ export const StyledAuthform: React.FC<AuthformProps> = ({
             <div className="mt-6 text-center">
               <p className="text-green-700 text-lg">
                 {type === "signup"
-                  ? "Already a snake player?"
-                  : "New to Snake Game?"}{" "}
+                  ? "Already a snake player? "
+                  : "New to Snake Game? "}{" "}
                 <button
                   onClick={onToggleType}
                   className="text-green-600 hover:text-green-800 font-bold hover:underline transition-colors"

@@ -29,7 +29,7 @@ const LoadPage: React.FC<LoadingPageProps> = ({ title, loadingBarTitle }) => {
       <Card className="h-screen max-h-50 w-full max-w-sm flex flex-col items-center justify-center bg-green-500">
         <div className="flex flex-col items-center gap-2 justify-center">
           {/* Loading Text */}
-          <div className="text-yellow-400 text-3xl font-semibold ml-2 mb-5">
+          <div className="text-center text-yellow-400 text-3xl font-semibold ml-2 mb-5">
             {loadingBarTitle}
             <span className="ml-1 animate-blink">.</span>
             <span className="ml-1 animate-blink delay-[0.3s]">.</span>
