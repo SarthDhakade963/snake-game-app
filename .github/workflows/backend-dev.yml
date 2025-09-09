@@ -21,6 +21,7 @@ jobs:
 
       - name: Install dependencies
         run: npm install
+        working-directory: ./backend
 
       - name: Load environment variables
         run: |
@@ -30,3 +31,4 @@ jobs:
 
       - name: Run Dev Server
         run: npm run dev
+        working-directory: ./backend

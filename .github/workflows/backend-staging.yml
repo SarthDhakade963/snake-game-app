@@ -21,7 +21,8 @@ jobs:
 
       - name: Install dependencies
         run: npm install
-
+        working-directory: ./backend
+        
       - name: Load environment variables
         run: |
           echo "DATABASE_URL=${{ secrets.STAGING_DATABASE_URL }}" >> $GITHUB_ENV
@@ -30,6 +31,8 @@ jobs:
 
       - name: Build Project
         run: npm run build
+        working-directory: ./backend
+
 
       - name: Deploy to Staging
         run: |

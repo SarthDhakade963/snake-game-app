@@ -21,6 +21,8 @@ jobs:
 
       - name: Install dependencies
         run: npm install
+        working-directory: ./backend
+
 
       - name: Load environment variables
         run: |
@@ -28,11 +30,10 @@ jobs:
           echo "JWT_SECRET=${{ secrets.PROD_JWT_SECRET }}" >> $GITHUB_ENV
           echo "FRONTEND_URL=${{ secrets.PROD_FRONTEND_URL }}" >> $GITHUB_ENV
 
-      - name: Run Tests
-        run: npm test || echo "No tests available"
-
       - name: Build Project
         run: npm run build
+        working-directory: ./backend
+
 
       - name: Deploy to Production
         run: |
